@@ -1,14 +1,9 @@
-
-'''
-Notes:
-zip file must be in the same folder as this .py
-downloaded images will be located in their repsected folders with the dimensions on their title
-to use run in terminal with <zip files> <dimensions> like:
-     python something.py 'example.zip' '84 74,300 300'
-'''
-#need https://github.com/Imgur/imgurpython
+# NEED https://github.com/Imgur/imgurpython
 import zipfile, re, urllib, os, sys, getopt, json, pyimgur, time
 
+# constants
+notes = 'USAGE: \nzip file must be in the same folder as this .py \ndownloaded images will be located in their repsected folders with the dimensions on their title \nto use run in terminal with <zip files> <dimensions> like: \npython crop-scrypt.py "example.zip" "84 74,300 300"'
+noZip = 'No zip or not zip either way exitting....'
 CLIENT_ID = "8d55bba5f3ea0c8" #for imgur
 
 # note if foldersOnly is True it will override imgOnly
@@ -25,9 +20,8 @@ def getZip(filename):
 def getCropURL(imgURL, width, height, cropType='cc'):
     return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s' %(imgURL, height, width, cropType)
 
-def downloadImg(url, name=None):
-    # print name
-    # name = name.split('/')[-1] if name and name.split('/')[-1] else url.split('/')[-1]
+def downloadImg(url, name=None, noPath=False):
+    name = name.split('/')[-1] if name and name.split('/')[-1] else url.split('/')[-1] if noPath else name
     # add extension (guessing) if there isnt any
     name+= '.' + re.findall(re.compile('(png|gif|jpe?g)'), url)[-1] if not re.search(re.compile('\.(png|gif|jpe?g)'), name) else ''
     urllib.urlretrieve(url, filename=name)
@@ -37,6 +31,7 @@ def extractZip(fileZip, imgs=None):
     fileZip.extractall(members=imgs)
     return True #should change this to try catch
 
+# not used but useful if you need to make empty folders of paths
 def makePath(filePath, pathRoot=''):
     filePath = pathRoot + filePath
     if not os.path.isdir(filePath):
@@ -51,39 +46,14 @@ def toURLImg(path):
 def deleteURLImg(upload_image):
     upload_image.delete()
 
+# add to the name before the extension for example makeNewName(cat.jpg, 4x4) -> cat4x4.jpg
 def makeNewName(imgName, conc):
     name = imgName.split('.')
     if len(name) < 2:
         return  imgName
     else:
-        # imgName=''
         imgName= ''.join(x for x in name[:-1]) + conc + '.' + name[-1]
     return imgName
-
-#NEED TOP UPDATE TO CATCH ERROR AND DEFAULT
-#COMMENTED OUT TO FIGURE OUT BETTER WAY, IN THE MEAN TIME USING BASIC METHOD
-# def getArgumentZip(arguments):
-#     helpOut = 'Usage: \n -f list of zipfile names \n -h/-help help'
-#     zipList = None
-#     dimensionList = None
-#     if len(arguments) < 2:
-#         print helpOut
-#         return None
-#     opts, args = getopt.getopt(arguments[1:],'f:hd:')
-#     for option, arg in opts:
-#         if option == '-h':
-#             print helpOut
-#         elif option == '-f' and not arg:
-#             print 'missing list of zipfile ex. "a.zip, b.zip, ..., q.zip"\n'
-#         elif option == '-f' and arg:
-#             zipList = arg.split(',')
-#         elif option == '-d' and not arg:
-#             print 'missing dimension list ex. "[30,30],[0,49],...,[300,300]"'
-#         elif option == '-d':
-#             dimensionList = [d for d in arg.split(',')]
-#         else:
-#             print helpOut
-#     return zipList, dimensionList if zipList and dimensionList else None
 
 def getArgumentZip(arguments):
     if len(arguments) < 3:
@@ -93,24 +63,17 @@ def getArgumentZip(arguments):
     return zipList, dimensions
 
 def main():
-    zipList, dimension = getArgumentZip(sys.argv)
-    if zipList is None and dimension is None:
-        print 'no ziplist or dimensions'
-        return
+
+    zipList, dimension = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None,None) else sys.exit(notes)
 
     for filename in zipList:
         # first make zipfile object and get img filepaths
-        zipFile = getZip(filename)
+        zipFile = getZip(filename) if getZip(filename) != None else sys.exit(noZip)
         imgPaths = getFilePaths(zipFile, filename.split('/')[-1], True)
         folderPaths = getFilePaths(zipFile, filename.split('/')[-1], foldersOnly=True)
 
-        # make folders to put images in
-        # commented out cause folders should exist when extracted
-        # for folders in folderPaths:
-        #     makePath(folders)
-
         # extract images
-        print 'done' if extractZip(zipFile, imgPaths) else 'not done'
+        print 'done extract' if extractZip(zipFile, imgPaths) else 'not done'
 
         # crop images and download
         for img in imgPaths:
