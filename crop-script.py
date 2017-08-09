@@ -1,5 +1,13 @@
+
+'''
+Notes:
+zip file must be in the same folder as this .py
+downloaded images will be located in their repsected folders with the dimensions on their title
+to use run in terminal with <zip files> <dimensions> like:
+     python something.py 'example.zip' '84 74,300 300'
+'''
 #need https://github.com/Imgur/imgurpython
-import zipfile, re, urllib, os, sys, getopt, json, pyimgur
+import zipfile, re, urllib, os, sys, getopt, json, pyimgur, time
 
 CLIENT_ID = "8d55bba5f3ea0c8" #for imgur
 
@@ -18,17 +26,18 @@ def getCropURL(imgURL, width, height, cropType='cc'):
     return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s' %(imgURL, height, width, cropType)
 
 def downloadImg(url, name=None):
-    name = name.split('/')[-1] if name and name.split('/')[-1] else url.split('/')[-1]
+    # print name
+    # name = name.split('/')[-1] if name and name.split('/')[-1] else url.split('/')[-1]
     # add extension (guessing) if there isnt any
     name+= '.' + re.findall(re.compile('(png|gif|jpe?g)'), url)[-1] if not re.search(re.compile('\.(png|gif|jpe?g)'), name) else ''
-    urllib.urlretrieve(url, filename='test/'+ name)
+    urllib.urlretrieve(url, filename=name)
     return 'Downloaded %s' %(url)
 
 def extractZip(fileZip, imgs=None):
     fileZip.extractall(members=imgs)
     return True #should change this to try catch
 
-def makePath(filePath, pathRoot='test/'):
+def makePath(filePath, pathRoot=''):
     filePath = pathRoot + filePath
     if not os.path.isdir(filePath):
         os.makedirs(filePath)
@@ -93,6 +102,12 @@ def main():
         # first make zipfile object and get img filepaths
         zipFile = getZip(filename)
         imgPaths = getFilePaths(zipFile, filename.split('/')[-1], True)
+        folderPaths = getFilePaths(zipFile, filename.split('/')[-1], foldersOnly=True)
+
+        # make folders to put images in
+        # commented out cause folders should exist when extracted
+        # for folders in folderPaths:
+        #     makePath(folders)
 
         # extract images
         print 'done' if extractZip(zipFile, imgPaths) else 'not done'
@@ -104,7 +119,8 @@ def main():
             for w, h in dimension:
                 newNameAdd = '-' + w + 'x' + h
                 print downloadImg( getCropURL(link, w, h), makeNewName(img, newNameAdd))
-                deleteURLImg(image)
+                time.sleep(60) #wait cause someone doesn't like too much work
+            deleteURLImg(image)
 
 
 main()
