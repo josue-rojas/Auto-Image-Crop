@@ -102,11 +102,9 @@ def main():
             #upload img to get url
             link, image = toURLImg(img)
             for w, h in dimension:
-                # print link
-                # print getCropURL(img, w, h)
                 newNameAdd = '-' + w + 'x' + h
                 print downloadImg( getCropURL(link, w, h), makeNewName(img, newNameAdd))
-                # deleteURLImg(image)
+                deleteURLImg(image)
 
 
 main()
