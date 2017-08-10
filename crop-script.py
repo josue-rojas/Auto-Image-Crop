@@ -1,10 +1,11 @@
-import zipfile, re, urllib, os, sys, json, time
+import zipfile, re, urllib, os, sys, json, time, glob
 
 # constants
 #NEED TO UPDATE USAGE
 notes = 'USAGE: \nzip file must be in the same folder as this .py \ndownloaded images will be located in their repsected folders with the dimensions on their title \nto use run in terminal with <zip files> <dimensions> like: \npython crop-scrypt.py "example.zip" "84 74,300 300"'
 noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
+imageFolder = 'images'
 
 '''
 python crop-script.py  "http://fc3ec90e.ngrok.io/" "test.zip" "84 74,50 50,40 40,400 400,328 278,300 300"
@@ -23,19 +24,18 @@ def getZip(filename):
     return zipfile.ZipFile(filename, 'r') if zipfile.is_zipfile(filename) else None
 
 def getCropURL(imgURL, width, height, cropType='sc', poi='face'):
-    # return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s'%(imgURL, height, width)
     return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s&poi=%s'%(imgURL, height, width, cropType, poi)
 
-def downloadImg(url, name=None, noPath=False):
+def downloadImg(url, name=None, noPath=False, root=imageFolder):
     if noPath:
         name = name.split('/')[-1] if name and name.split('/')[-1] else url.split('/')[-1]
     # add extension (guessing) if there isnt any
     name+= '.' + re.findall(re.compile('(png|gif|jpe?g)'), url)[-1] if not re.search(re.compile('\.(png|gif|jpe?g)'), name) else ''
-    urllib.urlretrieve(url, filename=name)
+    urllib.urlretrieve(url, filename=(root + '/' + name))
     return 'Downloaded %s' %(url)
 
 def extractZip(fileZip, imgs=None):
-    fileZip.extractall(members=imgs)
+    fileZip.extractall(members=imgs, path=imageFolder+'/')
     return True #should change this to try catch
 
 # not used but useful if you need to make empty folders of paths
@@ -56,18 +56,26 @@ def makeNewName(imgName, conc):
     return imgName
 
 def getArgumentZip(arguments):
-    if len(arguments) < 3:
-        return None, None, None
+    if len(arguments) < 2:
+        return None
     baseURL = arguments[1]
-    zipList = arguments[2].split(',')
-    return baseURL, zipList
+    return baseURL
+
+def zipList():
+    zips = []
+    for file in os.listdir(os.getcwd() + '/' +imageFolder):
+        if file.endswith(".zip"):
+            zips.append(os.path.join(imageFolder, file))
+            print zips[-1]
+    # os.chdir(os.getcwd() + '/' +imageFolder) #cd so extract will happen here
+    return zips
 
 def main():
 
-    baseURL, zipList = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None,None) else sys.exit(notes)
-    print baseURL
+    baseURL = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None) else sys.exit(notes)
 
-    for filename in zipList:
+    print zipList
+    for filename in zipList():
         # first make zipfile object and get img filepaths
         zipFile = getZip(filename) if getZip(filename) != None else sys.exit(noZip)
         imgPaths = getFilePaths(zipFile, filename.split('/')[-1], True)
@@ -85,3 +93,4 @@ def main():
 
 
 main()
+# print zipList()
