@@ -14,5 +14,6 @@ python crop-script.py "http://f07f11a6.ngrok.io/" "test.zip" "84 74,300 300"
 `
 
 ##### TODO:
-- removed imgur
+- integrate ngrok python api to make more autonomous
+  - update readme
 - automate the serv (ngrok thingy)

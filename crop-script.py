@@ -4,6 +4,7 @@ import zipfile, re, urllib, os, sys, json, time
 #NEED TO UPDATE USAGE
 notes = 'USAGE: \nzip file must be in the same folder as this .py \ndownloaded images will be located in their repsected folders with the dimensions on their title \nto use run in terminal with <zip files> <dimensions> like: \npython crop-scrypt.py "example.zip" "84 74,300 300"'
 noZip = 'No zip or not zip either way exitting....'
+dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 
 '''
 python crop-script.py  "http://fc3ec90e.ngrok.io/" "test.zip" "84 74,50 50,40 40,400 400,328 278,300 300"
@@ -55,16 +56,15 @@ def makeNewName(imgName, conc):
     return imgName
 
 def getArgumentZip(arguments):
-    if len(arguments) < 4:
+    if len(arguments) < 3:
         return None, None, None
     baseURL = arguments[1]
     zipList = arguments[2].split(',')
-    dimensions = [[d for d in dimension.split(' ')] for dimension in arguments[3].split(',')]
-    return baseURL, zipList, dimensions
+    return baseURL, zipList
 
 def main():
 
-    baseURL, zipList, dimension = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None,None,None) else sys.exit(notes)
+    baseURL, zipList = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None,None) else sys.exit(notes)
     print baseURL
 
     for filename in zipList:
@@ -78,8 +78,8 @@ def main():
 
         # crop images and download
         for img in imgPaths:
-            for w, h in dimension:
-                newNameAdd = '-' + w + 'x' + h
+            for w, h in dimensions:
+                newNameAdd = '-' + str(w) + 'x' + str(h)
                 print downloadImg( getCropURL((baseURL + img), w, h), makeNewName(img, newNameAdd))
                 time.sleep(3) #avoid  'Too many'
 
