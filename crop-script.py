@@ -7,10 +7,6 @@ noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 imageFolder = 'images'
 
-'''
-python crop-script.py  "http://fc3ec90e.ngrok.io/" "test.zip" "84 74,50 50,40 40,400 400,328 278,300 300"
-'''
-
 # note if foldersOnly is True it will override imgOnly
 def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
     # root = re.compile(filename.split('.')[0])
@@ -70,10 +66,10 @@ def zipList():
     return zips
 
 def main():
-
     baseURL = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None) else sys.exit(notes)
     zips = zipList()if zipList() else sys.exit('No Zips Found')
     for filename in zipList():
+
         # first make zipfile object and get img filepaths
         zipFile = getZip(filename) if getZip(filename) != None else sys.exit(noZip)
         imgPaths = getFilePaths(zipFile, filename.split('/')[-1], True)
@@ -92,4 +88,3 @@ def main():
 
 
 main()
-# print zipList()
