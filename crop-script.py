@@ -66,15 +66,13 @@ def zipList():
     for file in os.listdir(os.getcwd() + '/' +imageFolder):
         if file.endswith(".zip"):
             zips.append(os.path.join(imageFolder, file))
-            print zips[-1]
     # os.chdir(os.getcwd() + '/' +imageFolder) #cd so extract will happen here
     return zips
 
 def main():
 
     baseURL = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None) else sys.exit(notes)
-
-    print zipList
+    zips = zipList()if zipList() else sys.exit('No Zips Found')
     for filename in zipList():
         # first make zipfile object and get img filepaths
         zipFile = getZip(filename) if getZip(filename) != None else sys.exit(noZip)
