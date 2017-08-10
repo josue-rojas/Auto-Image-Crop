@@ -1,29 +1,29 @@
-# NEED https://github.com/Imgur/imgurpython
-import zipfile, re, urllib, os, sys, getopt, json, time
+import zipfile, re, urllib, os, sys, json, time
 
 # constants
 #NEED TO UPDATE USAGE
 notes = 'USAGE: \nzip file must be in the same folder as this .py \ndownloaded images will be located in their repsected folders with the dimensions on their title \nto use run in terminal with <zip files> <dimensions> like: \npython crop-scrypt.py "example.zip" "84 74,300 300"'
 noZip = 'No zip or not zip either way exitting....'
-CLIENT_ID = "8d55bba5f3ea0c8" #for imgur
 
 '''
-python crop-script.py  "http://36f9d94e.ngrok.io/" "test.zip" "84 74,300 300"
+python crop-script.py  "http://fc3ec90e.ngrok.io/" "test.zip" "84 74,50 50,40 40,400 400,328 278,300 300"
 '''
 
 # note if foldersOnly is True it will override imgOnly
 def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
-    root = re.compile(filename.split('.')[0])
+    # root = re.compile(filename.split('.')[0])
+    hiddenroot = re.compile('__MACOSX')
     imgRe = re.compile('\.(png|gif|jpe?g)') if imgOnly else ''
     if foldersOnly:
-        return [path for path in fileZip.namelist() if re.match(root, path) and path[-1] is '/']
-    return [path for path in fileZip.namelist() if re.match(root, path) and re.search(imgRe, path)]
+        return [path for path in fileZip.namelist() if not re.match(hiddenroot, path) and path[-1] is '/']
+    return [path for path in fileZip.namelist() if not re.match(hiddenroot, path) and re.search(imgRe, path)]
 
 def getZip(filename):
     return zipfile.ZipFile(filename, 'r') if zipfile.is_zipfile(filename) else None
 
-def getCropURL(imgURL, width, height, cropType='cc'):
-    return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s'%(imgURL, height, width, cropType)
+def getCropURL(imgURL, width, height, cropType='sc', poi='face'):
+    # return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s'%(imgURL, height, width)
+    return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s&poi=%s'%(imgURL, height, width, cropType, poi)
 
 def downloadImg(url, name=None, noPath=False):
     if noPath:
@@ -44,13 +44,6 @@ def makePath(filePath, pathRoot=''):
         os.makedirs(filePath)
     else:
         return 'exist already'
-
-def toURLImg(path):
-    upload_image = pyimgur.Imgur(CLIENT_ID).upload_image(path,title=path.split('/')[-1])
-    return upload_image.link, upload_image
-
-def deleteURLImg(upload_image):
-    upload_image.delete()
 
 # add to the name before the extension for example makeNewName(cat.jpg, 4x4) -> cat4x4.jpg
 def makeNewName(imgName, conc):
@@ -85,15 +78,10 @@ def main():
 
         # crop images and download
         for img in imgPaths:
-            #upload img to get url
-            # link, image = toURLImg(img)
-            link = baseURL + img
             for w, h in dimension:
                 newNameAdd = '-' + w + 'x' + h
-                print downloadImg( getCropURL(link, w, h), makeNewName(img, newNameAdd))
+                print downloadImg( getCropURL((baseURL + img), w, h), makeNewName(img, newNameAdd))
                 time.sleep(3) #avoid  'Too many'
-            #     time.sleep(60) #wait cause someone doesn't like too much work
-            # deleteURLImg(image)
 
 
 main()
