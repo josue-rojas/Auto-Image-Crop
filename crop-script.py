@@ -1,10 +1,15 @@
 # NEED https://github.com/Imgur/imgurpython
-import zipfile, re, urllib, os, sys, getopt, json, pyimgur, time
+import zipfile, re, urllib, os, sys, getopt, json, time
 
 # constants
+#NEED TO UPDATE USAGE
 notes = 'USAGE: \nzip file must be in the same folder as this .py \ndownloaded images will be located in their repsected folders with the dimensions on their title \nto use run in terminal with <zip files> <dimensions> like: \npython crop-scrypt.py "example.zip" "84 74,300 300"'
 noZip = 'No zip or not zip either way exitting....'
 CLIENT_ID = "8d55bba5f3ea0c8" #for imgur
+
+'''
+python crop-script.py  "http://36f9d94e.ngrok.io/" "test.zip" "84 74,300 300"
+'''
 
 # note if foldersOnly is True it will override imgOnly
 def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
@@ -18,10 +23,11 @@ def getZip(filename):
     return zipfile.ZipFile(filename, 'r') if zipfile.is_zipfile(filename) else None
 
 def getCropURL(imgURL, width, height, cropType='cc'):
-    return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s' %(imgURL, height, width, cropType)
+    return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s'%(imgURL, height, width, cropType)
 
 def downloadImg(url, name=None, noPath=False):
-    name = name.split('/')[-1] if name and name.split('/')[-1] else url.split('/')[-1] if noPath else name
+    if noPath:
+        name = name.split('/')[-1] if name and name.split('/')[-1] else url.split('/')[-1]
     # add extension (guessing) if there isnt any
     name+= '.' + re.findall(re.compile('(png|gif|jpe?g)'), url)[-1] if not re.search(re.compile('\.(png|gif|jpe?g)'), name) else ''
     urllib.urlretrieve(url, filename=name)
@@ -56,15 +62,17 @@ def makeNewName(imgName, conc):
     return imgName
 
 def getArgumentZip(arguments):
-    if len(arguments) < 3:
-        return None, None
-    zipList = arguments[1].split(',')
-    dimensions = [[d for d in dimension.split(' ')] for dimension in arguments[2].split(',')]
-    return zipList, dimensions
+    if len(arguments) < 4:
+        return None, None, None
+    baseURL = arguments[1]
+    zipList = arguments[2].split(',')
+    dimensions = [[d for d in dimension.split(' ')] for dimension in arguments[3].split(',')]
+    return baseURL, zipList, dimensions
 
 def main():
 
-    zipList, dimension = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None,None) else sys.exit(notes)
+    baseURL, zipList, dimension = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None,None,None) else sys.exit(notes)
+    print baseURL
 
     for filename in zipList:
         # first make zipfile object and get img filepaths
@@ -78,12 +86,14 @@ def main():
         # crop images and download
         for img in imgPaths:
             #upload img to get url
-            link, image = toURLImg(img)
+            # link, image = toURLImg(img)
+            link = baseURL + img
             for w, h in dimension:
                 newNameAdd = '-' + w + 'x' + h
                 print downloadImg( getCropURL(link, w, h), makeNewName(img, newNameAdd))
-                time.sleep(60) #wait cause someone doesn't like too much work
-            deleteURLImg(image)
+                time.sleep(3) #avoid  'Too many'
+            #     time.sleep(60) #wait cause someone doesn't like too much work
+            # deleteURLImg(image)
 
 
 main()
