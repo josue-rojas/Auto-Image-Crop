@@ -82,7 +82,7 @@ def main():
         for img in imgPaths:
             for w, h in dimensions:
                 newNameAdd = '-' + str(w) + 'x' + str(h)
-                print downloadImg( getCropURL((baseURL + img), w, h), makeNewName(img, newNameAdd))
+                print downloadImg( getCropURL((baseURL + imageFolder + '/'+ img), w, h), makeNewName(img, newNameAdd))
                 time.sleep(3) #avoid  'Too many'
         print 'FINALLY DONE CROPPING'
 
