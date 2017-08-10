@@ -8,7 +8,7 @@ noZip = 'No zip or not zip either way exitting....'
 CLIENT_ID = "8d55bba5f3ea0c8" #for imgur
 
 '''
-python crop-script.py "http://93963860.ngrok.io/" "test.zip" "84 74,300 300"
+python crop-script.py  "http://36f9d94e.ngrok.io/" "test.zip" "84 74,300 300"
 '''
 
 # note if foldersOnly is True it will override imgOnly
@@ -23,7 +23,7 @@ def getZip(filename):
     return zipfile.ZipFile(filename, 'r') if zipfile.is_zipfile(filename) else None
 
 def getCropURL(imgURL, width, height, cropType='cc'):
-    return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s' %(imgURL, height, width, cropType)
+    return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s'%(imgURL, height, width, cropType)
 
 def downloadImg(url, name=None, noPath=False):
     if noPath:
@@ -90,8 +90,8 @@ def main():
             link = baseURL + img
             for w, h in dimension:
                 newNameAdd = '-' + w + 'x' + h
-                print makeNewName(img, newNameAdd)
                 print downloadImg( getCropURL(link, w, h), makeNewName(img, newNameAdd))
+                time.sleep(3) #avoid  'Too many'
             #     time.sleep(60) #wait cause someone doesn't like too much work
             # deleteURLImg(image)
 
