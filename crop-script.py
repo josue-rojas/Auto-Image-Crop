@@ -90,6 +90,7 @@ def main():
                 newNameAdd = '-' + str(w) + 'x' + str(h)
                 print downloadImg( getCropURL((baseURL + img), w, h), makeNewName(img, newNameAdd))
                 time.sleep(3) #avoid  'Too many'
+        print 'FINALLY DONE CROPPING'
 
 
 main()
