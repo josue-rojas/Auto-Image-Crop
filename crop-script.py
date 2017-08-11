@@ -1,11 +1,12 @@
 import zipfile, re, urllib, os, sys, json, time, requests, json
 
 # constants
-#NEED TO UPDATE USAGE!!!!!
-notes = 'USAGE: \nzip file must be in the same folder as this .py \ndownloaded images will be located in their repsected folders with the dimensions on their title \nto use run in terminal with <zip files> <dimensions> like: \npython crop-scrypt.py "example.zip" "84 74,300 300"'
 noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 imageFolder = 'images'
+#
+tunnelName = 'default'
+tunnels = ['http://localhost:4040/api/tunnels/default%20%28http%29', 'http://localhost:4040/api/tunnels/default']
 
 # note if foldersOnly is True it will override imgOnly
 def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
@@ -59,12 +60,20 @@ def zipList():
     # os.chdir(os.getcwd() + '/' +imageFolder) #cd so extract will happen here
     return zips
 
-def getBaseURL():
-    r = requests.get('http://localhost:4040/api/tunnels')
-    return json.loads(r.text)['tunnels'][0]['public_url'] + '/'
+# (might change start to actually check if there are tunnels running)
+def refreshBaseURL(start=False):
+    print 'tunnels:::'
+    print requests.get('http://localhost:4040/api/tunnels').text
+    if not start:
+        requests.delete(tunnels[0])
+        requests.delete(tunnels[1])
+        time.sleep(1)
+    r = requests.post('http://localhost:4040/api/tunnels', json={'addr':'8080','proto':'http','name':'default'})
+    return json.loads(r.text)['public_url'] + '/'
 
 def main():
-    baseURL = getBaseURL()
+    baseURL = refreshBaseURL(True)
+    refresh = 0
     zips = zipList() if zipList() else sys.exit('No Zips Found')
     for filename in zipList():
         # first make zipfile object and get img filepaths
@@ -77,9 +86,16 @@ def main():
         for img in imgPaths:
             for w, h in dimensions:
                 newNameAdd = '-' + str(w) + 'x' + str(h)
-                print downloadImg( getCropURL((baseURL + imageFolder + '/'+ img), w, h), makeNewName(img, newNameAdd))
-                time.sleep(3) #avoid  'Too many'            
+                downloadImg( getCropURL((baseURL + imageFolder + '/'+ img), w, h), makeNewName(img, newNameAdd))
+                refresh+=1
+                print 'refresh ' + str(refresh)
+                if refresh == 20:
+                    refresh = 0
+                    baseURL = refreshBaseURL()
+                    print baseURL
+                    time.sleep(3) #avoid  'Too many'
         print 'FINALLY DONE CROPPING'
 
 
 main()
+# print refreshBaseURL(False)
