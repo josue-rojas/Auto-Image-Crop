@@ -1,7 +1,7 @@
-import zipfile, re, urllib, os, sys, json, time, glob
+import zipfile, re, urllib, os, sys, json, time, requests, json
 
 # constants
-#NEED TO UPDATE USAGE
+#NEED TO UPDATE USAGE!!!!!
 notes = 'USAGE: \nzip file must be in the same folder as this .py \ndownloaded images will be located in their repsected folders with the dimensions on their title \nto use run in terminal with <zip files> <dimensions> like: \npython crop-scrypt.py "example.zip" "84 74,300 300"'
 noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
@@ -51,12 +51,6 @@ def makeNewName(imgName, conc):
         imgName= ''.join(x for x in name[:-1]) + conc + '.' + name[-1]
     return imgName
 
-def getArgumentZip(arguments):
-    if len(arguments) < 2:
-        return None
-    baseURL = arguments[1]
-    return baseURL
-
 def zipList():
     zips = []
     for file in os.listdir(os.getcwd() + '/' +imageFolder):
@@ -65,25 +59,26 @@ def zipList():
     # os.chdir(os.getcwd() + '/' +imageFolder) #cd so extract will happen here
     return zips
 
-def main():
-    baseURL = getArgumentZip(sys.argv) if getArgumentZip(sys.argv) != (None) else sys.exit(notes)
-    zips = zipList()if zipList() else sys.exit('No Zips Found')
-    for filename in zipList():
+def getBaseURL():
+    r = requests.get('http://localhost:4040/api/tunnels')
+    return json.loads(r.text)['tunnels'][0]['public_url'] + '/'
 
+def main():
+    baseURL = getBaseURL()
+    zips = zipList() if zipList() else sys.exit('No Zips Found')
+    for filename in zipList():
         # first make zipfile object and get img filepaths
         zipFile = getZip(filename) if getZip(filename) != None else sys.exit(noZip)
         imgPaths = getFilePaths(zipFile, filename.split('/')[-1], True)
         folderPaths = getFilePaths(zipFile, filename.split('/')[-1], foldersOnly=True)
-
         # extract images
         print 'done extract' if extractZip(zipFile, imgPaths) else 'not done'
-
         # crop images and download
         for img in imgPaths:
             for w, h in dimensions:
                 newNameAdd = '-' + str(w) + 'x' + str(h)
                 print downloadImg( getCropURL((baseURL + imageFolder + '/'+ img), w, h), makeNewName(img, newNameAdd))
-                time.sleep(3) #avoid  'Too many'
+                time.sleep(3) #avoid  'Too many'            
         print 'FINALLY DONE CROPPING'
 
 
