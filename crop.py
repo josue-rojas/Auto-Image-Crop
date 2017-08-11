@@ -106,6 +106,6 @@ def test():
         for i in range(0, 21):
             print i
             urllib.urlretrieve(url,'images/'+str(i) + '.junk')
-            time.sleep(2)
+            time.sleep(3)
 
 test()
