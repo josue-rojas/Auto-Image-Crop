@@ -60,14 +60,10 @@ def zipList():
     # os.chdir(os.getcwd() + '/' +imageFolder) #cd so extract will happen here
     return zips
 
-# (might change start to actually check if there are tunnels running)
-def refreshBaseURL(start=False):
-    print 'tunnels:::'
-    print requests.get('http://localhost:4040/api/tunnels').text
-    if not start:
-        requests.delete(tunnels[0])
-        requests.delete(tunnels[1])
-        time.sleep(1)
+def refreshBaseURL():
+    tunnels = json.loads(requests.get('http://localhost:4040/api/tunnels').text)['tunnels']
+    for tunnel in tunnels:
+        requests.delete('http://localhost:4040' + tunnel['uri'].replace('+','%20'))
     r = requests.post('http://localhost:4040/api/tunnels', json={'addr':'8080','proto':'http','name':'default'})
     return json.loads(r.text)['public_url'] + '/'
 
@@ -97,5 +93,19 @@ def main():
         print 'FINALLY DONE CROPPING'
 
 
-main()
-# print refreshBaseURL(False)
+# main()
+def test():
+    print 'starttt'
+    '''
+    this wont work to avoid overflow session. this does not reset session id! darn
+    that is why there is a time.sleep
+    '''
+    while True:
+        url = refreshBaseURL()
+        print 'change ' + url
+        for i in range(0, 21):
+            print i
+            urllib.urlretrieve(url,'images/'+str(i) + '.junk')
+            time.sleep(2)
+
+test()
