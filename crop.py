@@ -72,7 +72,6 @@ def gitignoreImages(igImg):
         gitignore.close()
 
 def main():
-    # baseURL = refreshBaseURL()
     zips = zipList() if zipList() else sys.exit('No Zips Found')
     for filename in zipList():
         # first make zipfile object and get img filepaths
@@ -97,5 +96,5 @@ def main():
         print 'cropped and deleted from github'
 
 
-# main()
+main()
 # gitignoreImages(True)

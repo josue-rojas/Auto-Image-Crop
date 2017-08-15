@@ -1,5 +1,5 @@
 import os
-gitbranch = 'test'
+gitbranch = 'githubversion'
 deleteCommands = 'git checkout -b %s; git checkout %s; git rm -r --cached .; git add .; git commit -m "deleted images"; git push;'%(branchName, branchName)
 with open('.gitignore','r') as gitignore:
     newIgnore = gitignore.readlines()
