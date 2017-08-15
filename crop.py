@@ -1,11 +1,12 @@
 import zipfile, re, urllib, os, sys, json, time, requests, json
 
 # constants
-#NEED TO UPDATE USAGE!!!!!
-notes = 'USAGE: \nzip file must be in the same folder as this .py \ndownloaded images will be located in their repsected folders with the dimensions on their title \nto use run in terminal with <zip files> <dimensions> like: \npython crop-scrypt.py "example.zip" "84 74,300 300"'
 noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 imageFolder = 'images'
+#
+tunnelName = 'default'
+tunnels = ['http://localhost:4040/api/tunnels/default%20%28http%29', 'http://localhost:4040/api/tunnels/default']
 
 # note if foldersOnly is True it will override imgOnly
 def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
@@ -59,12 +60,15 @@ def zipList():
     # os.chdir(os.getcwd() + '/' +imageFolder) #cd so extract will happen here
     return zips
 
-def getBaseURL():
-    r = requests.get('http://localhost:4040/api/tunnels')
-    return json.loads(r.text)['tunnels'][0]['public_url'] + '/'
+def refreshBaseURL():
+    tunnels = json.loads(requests.get('http://localhost:4040/api/tunnels').text)['tunnels']
+    for tunnel in tunnels:
+        requests.delete('http://localhost:4040' + tunnel['uri'].replace('+','%20'))
+    r = requests.post('http://localhost:4040/api/tunnels', json={'addr':'8080','proto':'http','name':'default'})
+    return json.loads(r.text)['public_url'] + '/'
 
 def main():
-    baseURL = getBaseURL()
+    baseURL = refreshBaseURL()
     zips = zipList() if zipList() else sys.exit('No Zips Found')
     for filename in zipList():
         # first make zipfile object and get img filepaths
@@ -77,9 +81,24 @@ def main():
         for img in imgPaths:
             for w, h in dimensions:
                 newNameAdd = '-' + str(w) + 'x' + str(h)
-                print downloadImg( getCropURL((baseURL + imageFolder + '/'+ img), w, h), makeNewName(img, newNameAdd))
-                time.sleep(3) #avoid  'Too many'            
+                downloadImg( getCropURL((baseURL + imageFolder + '/'+ img), w, h), makeNewName(img, newNameAdd))
+                time.sleep(3) #avoid  'Too many'
         print 'FINALLY DONE CROPPING'
 
 
 main()
+def test():
+    print 'starttt'
+    '''
+    this wont work to avoid overflow session. this does not reset session id! darn
+    that is why there is a time.sleep
+    '''
+    while True:
+        url = refreshBaseURL()
+        print 'change ' + url
+        for i in range(0, 21):
+            print i
+            urllib.urlretrieve(url,'images/'+str(i) + '.junk')
+            time.sleep(3)
+
+# test()

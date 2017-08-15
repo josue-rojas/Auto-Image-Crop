@@ -1,27 +1,18 @@
 # auto-image-crop
 ------
-
 auto crop a zip of images using http://imagesvc.timeincapp.com/
 
 ### NEED
-(update this with links)
-- requests
-- ngrok
+- [requests](https://pypi.python.org/pypi/requests)
+- [ngrok](https://ngrok.com)
 
 ### How To Use
 in mac
-1. double click on serv.command and copy the ngrok url
-2. move all zips into images folder
-3. then in __another__ terminal cd into this dir
-4. then in run
-
-  ```bash
-  python crop-script.py
-  ```
-  
-5. grab a coffee or do something else while the images get cropped and downloaded
+1. !important make 'images' folder and inside put zip files containing the images
+2. double click start.command
+6. grab a coffee or do something else while the images get cropped and downloaded (3seconds per img)
 
 ##### TODO:
--  ~~integrate ngrok python api to make more autonomous~~
-- make auto everything by reseting ngrok
+- lower processing time
+- check image are downloaded and are not junk
 - update readme (always and forever)
