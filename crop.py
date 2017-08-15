@@ -68,8 +68,7 @@ def refreshBaseURL():
     return json.loads(r.text)['public_url'] + '/'
 
 def main():
-    baseURL = refreshBaseURL(True)
-    refresh = 0
+    baseURL = refreshBaseURL()
     zips = zipList() if zipList() else sys.exit('No Zips Found')
     for filename in zipList():
         # first make zipfile object and get img filepaths
@@ -83,17 +82,11 @@ def main():
             for w, h in dimensions:
                 newNameAdd = '-' + str(w) + 'x' + str(h)
                 downloadImg( getCropURL((baseURL + imageFolder + '/'+ img), w, h), makeNewName(img, newNameAdd))
-                refresh+=1
-                print 'refresh ' + str(refresh)
-                if refresh == 20:
-                    refresh = 0
-                    baseURL = refreshBaseURL()
-                    print baseURL
-                    time.sleep(3) #avoid  'Too many'
+                time.sleep(3) #avoid  'Too many'
         print 'FINALLY DONE CROPPING'
 
 
-# main()
+main()
 def test():
     print 'starttt'
     '''
@@ -108,4 +101,4 @@ def test():
             urllib.urlretrieve(url,'images/'+str(i) + '.junk')
             time.sleep(3)
 
-test()
+# test()
