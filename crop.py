@@ -1,13 +1,15 @@
-import zipfile, re, urllib, os, sys, json, time, requests, fileinput
+import zipfile, re, urllib, os, sys, time
 
 # constants
 noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 imageFolder = 'images'
 #change branch name to your own and make sure it has upstream
-branchName = 'moving-away-from-ngrok/'
-uploadCommands = 'git checkout -b moving-away-from-ngrok;git checkout moving-away-from-ngrok; git add *; git commit -m "added images for cropping"; git push;'
-deleteCommands = 'git rm -r --cached .; git add .; git commit -m "deleted images"; git push;'
+branchName = 'githubversion'
+uploadCommands = 'git checkout -b %s; git checkout %s; git add *; git commit -m "added images for cropping"; git push;'%(branchName, branchName)
+deleteCommands = 'git checkout -b %s; git checkout %s; git rm -r --cached .; git add .; git commit -m "deleted images"; git push;'%(branchName, branchName)
+
+print deleteCommands
 
 # note if foldersOnly is True it will override imgOnly
 def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
@@ -61,13 +63,6 @@ def zipList():
     # os.chdir(os.getcwd() + '/' +imageFolder) #cd so extract will happen here
     return zips
 
-def refreshBaseURL():
-    tunnels = json.loads(requests.get('http://localhost:4040/api/tunnels').text)['tunnels']
-    for tunnel in tunnels:
-        requests.delete('http://localhost:4040' + tunnel['uri'].replace('+','%20'))
-    r = requests.post('http://localhost:4040/api/tunnels', json={'addr':'8080','proto':'http','name':'default'})
-    return json.loads(r.text)['public_url'] + '/'
-
 def gitignoreImages(igImg):
     with open('.gitignore','r') as gitignore:
         newIgnore = gitignore.readlines()
@@ -93,7 +88,7 @@ def main():
             for w, h in dimensions:
                 newNameAdd = '-' + str(w) + 'x' + str(h)
                 # imgURL = baseURL + imageFolder + '/'+ img
-                imgURL = 'https://raw.githubusercontent.com/josuerojasrojas/auto-image-crop/' + branchName + imageFolder + '/' + img
+                imgURL = 'https://raw.githubusercontent.com/josuerojasrojas/auto-image-crop/' + branchName + '/' + imageFolder + '/' + img
                 print downloadImg( getCropURL((imgURL), w, h), makeNewName(img, newNameAdd))
                 time.sleep(1) #avoid  'Too many'
         #delete images from github
@@ -102,5 +97,5 @@ def main():
         print 'cropped and deleted from github'
 
 
-main()
+# main()
 # gitignoreImages(True)
