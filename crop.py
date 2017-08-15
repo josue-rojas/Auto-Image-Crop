@@ -1,12 +1,15 @@
-import zipfile, re, urllib, os, sys, json, time, requests, json
+import zipfile, re, urllib, os, sys, time
 
 # constants
 noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 imageFolder = 'images'
-#
-tunnelName = 'default'
-tunnels = ['http://localhost:4040/api/tunnels/default%20%28http%29', 'http://localhost:4040/api/tunnels/default']
+#change branch name to your own and make sure it has upstream
+branchName = 'githubversion'
+uploadCommands = 'git checkout -b %s; git checkout %s; git add *; git commit -m "added images for cropping"; git push;'%(branchName, branchName)
+deleteCommands = 'git checkout -b %s; git checkout %s; git rm -r --cached .; git add .; git commit -m "deleted images"; git push;'%(branchName, branchName)
+
+print deleteCommands
 
 # note if foldersOnly is True it will override imgOnly
 def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
@@ -60,45 +63,38 @@ def zipList():
     # os.chdir(os.getcwd() + '/' +imageFolder) #cd so extract will happen here
     return zips
 
-def refreshBaseURL():
-    tunnels = json.loads(requests.get('http://localhost:4040/api/tunnels').text)['tunnels']
-    for tunnel in tunnels:
-        requests.delete('http://localhost:4040' + tunnel['uri'].replace('+','%20'))
-    r = requests.post('http://localhost:4040/api/tunnels', json={'addr':'8080','proto':'http','name':'default'})
-    return json.loads(r.text)['public_url'] + '/'
+def gitignoreImages(igImg):
+    with open('.gitignore','r') as gitignore:
+        newIgnore = gitignore.readlines()
+    newIgnore[2] = 'images/*' if igImg else ' # images/*'
+    with open('.gitignore','w') as gitignore:
+        gitignore.writelines(newIgnore)
+        gitignore.close()
 
 def main():
-    baseURL = refreshBaseURL()
     zips = zipList() if zipList() else sys.exit('No Zips Found')
     for filename in zipList():
         # first make zipfile object and get img filepaths
         zipFile = getZip(filename) if getZip(filename) != None else sys.exit(noZip)
         imgPaths = getFilePaths(zipFile, filename.split('/')[-1], True)
-        folderPaths = getFilePaths(zipFile, filename.split('/')[-1], foldersOnly=True)
-        # extract images
+        # extract images and upload to github
         print 'done extract' if extractZip(zipFile, imgPaths) else 'not done'
+        gitignoreImages(igImg=False)
+        os.system(uploadCommands)
+        print 'done upload to github'
         # crop images and download
         for img in imgPaths:
             for w, h in dimensions:
                 newNameAdd = '-' + str(w) + 'x' + str(h)
-                downloadImg( getCropURL((baseURL + imageFolder + '/'+ img), w, h), makeNewName(img, newNameAdd))
-                time.sleep(3) #avoid  'Too many'
-        print 'FINALLY DONE CROPPING'
+                # imgURL = baseURL + imageFolder + '/'+ img
+                imgURL = 'https://raw.githubusercontent.com/josuerojasrojas/auto-image-crop/' + branchName + '/' + imageFolder + '/' + img
+                print downloadImg( getCropURL((imgURL), w, h), makeNewName(img, newNameAdd))
+                time.sleep(1) #avoid  'Too many'
+        #delete images from github
+        gitignoreImages(igImg=True)
+        os.system(deleteCommands)
+        print 'cropped and deleted from github'
 
 
 main()
-def test():
-    print 'starttt'
-    '''
-    this wont work to avoid overflow session. this does not reset session id! darn
-    that is why there is a time.sleep
-    '''
-    while True:
-        url = refreshBaseURL()
-        print 'change ' + url
-        for i in range(0, 21):
-            print i
-            urllib.urlretrieve(url,'images/'+str(i) + '.junk')
-            time.sleep(3)
-
-# test()
+# gitignoreImages(True)
