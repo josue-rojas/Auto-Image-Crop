@@ -4,16 +4,17 @@ import zipfile, re, urllib, os, sys, time
 noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 imageFolder = 'images'
-#change branch name to your own and make sure it has upstream
-branchName = 'githubversion'
-uploadCommands = 'git checkout -b %s; git checkout %s; git add *; git commit -m "added images for cropping"; git push;'%(branchName, branchName)
-deleteCommands = 'git checkout -b %s; git checkout %s; git rm -r --cached .; git add .; git commit -m "deleted images"; git push;'%(branchName, branchName)
-
-print deleteCommands
+#checkout to different branch name to your own and make sure it has upstream
+def getBranchName():
+    with open('.git/HEAD','r') as head:
+        branch = head.readline().split('/')[-1].rstrip()
+        return branch if branch != 'master' else sys.exit('checkout to different branch then run again')
+branchName = getBranchName()
+uploadCommands = 'git add *; git commit -m "added images for cropping"; git push;'
+deleteCommands = 'git rm -r --cached .; git add .; git commit -m "deleted images"; git push;'
 
 # note if foldersOnly is True it will override imgOnly
 def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
-    # root = re.compile(filename.split('.')[0])
     hiddenroot = re.compile('__MACOSX')
     imgRe = re.compile('\.(png|gif|jpe?g)') if imgOnly else ''
     if foldersOnly:
@@ -96,5 +97,5 @@ def main():
         print 'cropped and deleted from github'
 
 
-main()
+# main()
 # gitignoreImages(True)
