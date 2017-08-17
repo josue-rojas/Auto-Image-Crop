@@ -2,13 +2,17 @@
 ------
 auto crop a zip of images using http://imagesvc.timeincapp.com/
 
-### NEED
+### NEED BEFORE CONTINUING
 - github account
+- [ssh set up](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)
+- [and setup to stop terminal from asking ssh passphrase](https://stackoverflow.com/questions/10032461/git-keeps-asking-me-for-my-ssh-key-passphrase)
+
 
 ### How To Use
 in mac
 1. clone this repo and make a new branch and push upstream to github
   ```bash
+  git clone git@github.com:josuerojasrojas/auto-image-crop.git #ssh
   cd auto-image-crop # if you arent there already
   git checkout <name of new branch>
   git push --set-upstream origin <name of new branch>
@@ -16,7 +20,7 @@ in mac
 2. make sure you did the first step
 3. !important make 'images' folder and inside put zip files containing the images
 4. double click start.command
-5. grab a coffee or do something else while the images get cropped and downloaded (3seconds per img)
+5. grab a coffee or do something else while the images get cropped and downloaded (1 seconds per img)
 6. (optional) double click clean.command just to make sure image folder gets deleted from github, this will also delete if from your local files
 
 ##### TODO:
