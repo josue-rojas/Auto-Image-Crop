@@ -4,6 +4,8 @@ import zipfile, re, urllib, os, sys, time
 noZip = 'No zip or not zip either way exitting....'
 dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 imageFolder = 'images'
+cropType = 'sc'
+poi = 'face'
 #checkout to different branch name to your own and make sure it has upstream
 def getBranchName():
     with open('.git/HEAD','r') as head:
@@ -24,7 +26,7 @@ def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
 def getZip(filename):
     return zipfile.ZipFile(filename, 'r') if zipfile.is_zipfile(filename) else None
 
-def getCropURL(imgURL, width, height, cropType='sc', poi='face'):
+def getCropURL(imgURL, width, height, cropType=cropType, poi=poi):
     return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s&poi=%s'%(imgURL, height, width, cropType, poi)
 
 def downloadImg(url, name=None, noPath=False, root=imageFolder):
@@ -48,12 +50,13 @@ def makePath(filePath, pathRoot=''):
         return 'exist already'
 
 # add to the name before the extension for example makeNewName(cat.jpg, 4x4) -> cat4x4.jpg
+# this might need more testing something about the first if is....
 def makeNewName(imgName, conc):
     name = imgName.split('.')
     if len(name) < 2:
         return  imgName
     else:
-        imgName= ''.join(x for x in name[:-1]) + conc + '.' + name[-1]
+        imgName= '.'.join(x for x in name[:-1]) + conc + '.' + name[-1]
     return imgName
 
 def zipList():
@@ -90,12 +93,12 @@ def main():
                 # imgURL = baseURL + imageFolder + '/'+ img
                 imgURL = 'https://raw.githubusercontent.com/josuerojasrojas/auto-image-crop/' + branchName + '/' + imageFolder + '/' + img
                 print downloadImg( getCropURL((imgURL), w, h), makeNewName(img, newNameAdd))
-                time.sleep(1) #avoid  'Too many'
+                # time.sleep(1) #avoid  'Too many'
         #delete images from github
         gitignoreImages(igImg=True)
         os.system(deleteCommands)
         print 'cropped and deleted from github'
 
 
-# main()
+main()
 # gitignoreImages(True)
