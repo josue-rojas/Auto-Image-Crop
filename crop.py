@@ -6,6 +6,7 @@ dimensions = [[84,74],[50,50],[40,40],[400,400],[328,278],[300,300]]
 imageFolder = 'images'
 cropType = 'sc'
 poi = 'face'
+onlyResize = False
 #checkout to different branch name to your own and make sure it has upstream
 def getBranchName():
     with open('.git/HEAD','r') as head:
@@ -26,7 +27,9 @@ def getFilePaths(fileZip, filename, imgOnly=False, foldersOnly=False):
 def getZip(filename):
     return zipfile.ZipFile(filename, 'r') if zipfile.is_zipfile(filename) else None
 
-def getCropURL(imgURL, width, height, cropType=cropType, poi=poi):
+def getCropURL(imgURL, width, height, cropType=cropType, poi=poi, onlyResize=onlyResize):
+    if onlyResize:
+        return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s'%(imgURL, height, width)
     return 'http://imagesvc.timeincapp.com/?url=%s&h=%s&w=%s&c=%s&poi=%s'%(imgURL, height, width, cropType, poi)
 
 def downloadImg(url, name=None, noPath=False, root=imageFolder):
