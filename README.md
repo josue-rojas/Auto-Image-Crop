@@ -2,6 +2,7 @@
 # for routes in portfolio
 layout: default
 title: Auto Image Crop
+permalink: /Auto-Image-Crop
 ---
 # auto-image-crop
 ------
