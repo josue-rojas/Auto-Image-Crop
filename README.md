@@ -1,9 +1,3 @@
----
-# for routes in portfolio
-layout: default
-title: Auto Image Crop
-permalink: /Auto-Image-Crop
----
 # auto-image-crop
 ------
 auto crop a zip of images using http://imagesvc.timeincapp.com/
